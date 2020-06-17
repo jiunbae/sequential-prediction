@@ -23,6 +23,8 @@ def main(args: argparse.Namespace):
     train[train_columns].to_csv(str(out.joinpath('train.csv')), index=None)
     test[test_columns].to_csv(str(out.joinpath('test.csv')), index=None)
 
+    label_columns = list(set(train_columns) - set(test_columns))
+    test[label_columns].to_csv(str(out.joinpath('test-label.csv')), index=None)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
