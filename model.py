@@ -13,8 +13,8 @@ class Model:
         self.model = self.graph(**graph_param)
         self.optim = self.optimizer(**optim_param)
         
-        self.model.compile(loss='mean_squared_error',
-                           optimizer=self.optim, metrics=['mae', 'acc'])
+        self.model.compile(loss='mae',
+                           optimizer=self.optim, metrics=['mse', 'mae', 'acc'])
 
     def __getattr__(self, key: str) -> Any:
         if hasattr(self.model, key):

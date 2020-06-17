@@ -8,6 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 class Dataset:
     def __init__(self, path: str, test: bool = False):
         self.dataframe = pd.read_csv(path)
+        self.scaler = MinMaxScaler()
         self.is_test = test
 
     def __len__(self):
@@ -18,8 +19,7 @@ class Dataset:
         assert feature_size == len(self.dataframe.columns) + int(self.is_test),\
             "feautre_size must match length of columns"
 
-        scaler = MinMaxScaler()
-        dataframe = scaler.fit_transform(self.dataframe)
+        dataframe = self.scaler.fit_transform(self.dataframe)
 
         if self.is_test:
             return np.hstack((dataframe, np.zeros((len(self), 1))))
@@ -31,3 +31,7 @@ class Dataset:
                 x[i] = dataframe[i:i+input_size]
 
             return x, y
+
+    def inverse_transform(self, X: np.ndarray, axis: int = -1) ->\
+            np.ndarray:
+        return (X + self.scaler.min_[axis]) / self.scaler.scale_[axis]

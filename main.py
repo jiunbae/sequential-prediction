@@ -30,6 +30,9 @@ def main(args: argparse.Namespace):
     out.mkdir(exist_ok=True, parents=True)
 
     train_set, test_set = Dataset(args.train), Dataset(args.test, test=True)
+    assert len(train_set.dataframe.columns) == len(test_set.dataframe.columns) + 1,\
+        "The number of columns in the train set and test set must be one difference."
+
     train_x, train_y = train_set(**model_args)
     test = np.concatenate((train_x[-1], test_set(**model_args)))
 
@@ -45,8 +48,8 @@ def main(args: argparse.Namespace):
         pred = model.predict(test_input).squeeze()
         test[index + args.input_size, -1] = pred
 
-    result = pd.DataFrame(test[args.input_size:, -1],
-                           columns=[train_set.dataframe.columns[-1]])
+    result = pd.DataFrame(train_set.inverse_transform(test[args.input_size:, -1]),
+                          columns=[train_set.dataframe.columns[-1]])
     result.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
@@ -64,6 +67,8 @@ if __name__ == '__main__':
                         help="Training arguments for trainer, epoch")
     parser.add_argument('--batch', required=False, default=32, type=int,
                         help="Training arguments for trainer, batch")
+    parser.add_argument('--loss', required=False, default='mse', type=str, choices=['mse', 'mae'],
+                        help="Training arguments for trainer, loss function")
                         
     parser.add_argument('--feature-size', required=False, default=6, type=int,
                         help="Training arguments for network, feature size")
