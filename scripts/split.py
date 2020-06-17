@@ -8,8 +8,12 @@ def main(args: argparse.Namespace):
     df = pd.read_csv(args.data)
     train, test = df.copy(), df.copy()
 
-    train_columns = list(filter(len, map(str.strip, args.train_columns.split(','))))
-    test_columns = list(filter(len, map(str.strip, args.test_columns.split(','))))
+    train_columns = list(
+        filter(len, map(str.strip, args.train_columns.split(','))))
+    test_columns = list(
+        filter(len, map(str.strip, args.test_columns.split(','))))
+    label_columns = list(
+        set(train_columns) - set(test_columns))
 
     for col, val in zip(['Year', 'Month', 'Day'], map(int, args.train.split('-'))):
         train = train.loc[train[col] == val]
@@ -23,7 +27,6 @@ def main(args: argparse.Namespace):
     train[train_columns].to_csv(str(out.joinpath('train.csv')), index=None)
     test[test_columns].to_csv(str(out.joinpath('test.csv')), index=None)
 
-    label_columns = list(set(train_columns) - set(test_columns))
     test[label_columns].to_csv(str(out.joinpath('test-label.csv')), index=None)
 
 if __name__ == '__main__':
