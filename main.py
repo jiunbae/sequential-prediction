@@ -1,4 +1,7 @@
+import tensorflow as tf
+from keras import backend as K
 import argparse
+import random
 from pathlib import Path
 
 import pandas as pd
@@ -8,11 +11,22 @@ from model import Model
 from data import Dataset
 
 
+def init(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+
+
 def main(args: argparse.Namespace):
+    init(args.seed)
+
+    train_set, test_set = Dataset(args.train), Dataset(args.test, test=True)
+    assert len(train_set.dataframe.columns) == len(test_set.dataframe.columns) + 1,\
+        "The number of columns in the train set and test set must be one difference."
+
     model_args = {
         'hidden_size': args.hidden_size,
         'input_size': args.input_size,
-        'feature_size': args.feature_size,
+        'feature_size': len(train_set.dataframe.columns),
     }
     optim_args = {
         'lr': args.lr,
@@ -21,6 +35,9 @@ def main(args: argparse.Namespace):
         'decay': args.decay,
     }
 
+    train_x, train_y = train_set(**model_args)
+    test = np.concatenate((train_x[-1], test_set(**model_args)))
+    
     model = Model(model_args, optim_args)
 
     if not args.silence:
@@ -28,13 +45,6 @@ def main(args: argparse.Namespace):
 
     out = Path(args.output)
     out.mkdir(exist_ok=True, parents=True)
-
-    train_set, test_set = Dataset(args.train), Dataset(args.test, test=True)
-    assert len(train_set.dataframe.columns) == len(test_set.dataframe.columns) + 1,\
-        "The number of columns in the train set and test set must be one difference."
-
-    train_x, train_y = train_set(**model_args)
-    test = np.concatenate((train_x[-1], test_set(**model_args)))
 
     # Train sequences
     model.fit(train_x, train_y, epochs=args.epoch,
@@ -49,7 +59,8 @@ def main(args: argparse.Namespace):
         test[index + args.input_size, -1] = pred
 
     result = test_set.dataframe
-    result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
+    # result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
+    result[train_set.dataframe.columns[-1]] = test[args.input_size:, -1]
     result.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
@@ -70,8 +81,6 @@ if __name__ == '__main__':
     parser.add_argument('--loss', required=False, default='mse', type=str, choices=['mse', 'mae'],
                         help="Training arguments for trainer, loss function")
                         
-    parser.add_argument('--feature-size', required=False, default=6, type=int,
-                        help="Training arguments for network, feature size")
     parser.add_argument('--hidden-size', required=False, default=32, type=int,
                         help="Training arguments for network, hidden layer size")
     parser.add_argument('--input-size', required=False, default=8, type=int,
@@ -89,6 +98,8 @@ if __name__ == '__main__':
                         help="Training arguments for optimizer, decay")
 
     # ETC
+    parser.add_argument('--seed', required=False, default=42, type=int,
+                        help="The answer to life the universe and everything")
     parser.add_argument('--silence', required=False, default=False, action='store_true',
                         help="Verbose log")
     

@@ -5,6 +5,7 @@ import keras.backend as K
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
 from keras.callbacks import EarlyStopping
+from tensorflow import set_random_seed
 
 
 class Model:
@@ -51,3 +52,7 @@ class Model:
     @staticmethod
     def optimizer(lr: float = .01, beta_1: float = .9, beta_2: float = .999, decay: float = .0):
         return keras.optimizers.Adam(lr=.01, beta_1=.9, beta_2=.999, decay=.0)
+
+    @staticmethod
+    def init(seed: int):
+        set_random_seed(seed)

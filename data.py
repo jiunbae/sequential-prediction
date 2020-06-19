@@ -20,6 +20,7 @@ class Dataset:
             "feautre_size must match length of columns"
 
         dataframe = self.scaler.fit_transform(self.dataframe)
+        dataframe[:, -1] = self.dataframe.values[:, -1]
 
         if self.is_test:
             return np.hstack((dataframe, np.zeros((len(self), 1))))

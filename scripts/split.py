@@ -39,10 +39,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--train', required=False, default='2017', type=str,
                         help="Train target date for extraction. (YYYY(-MM(-DD)))")
-    parser.add_argument('--train-columns', required=False, default='Month, Day, Hour, Quarter, P1(DayOfWeek), Demand', type=str,
+    parser.add_argument('--train-columns', required=False, default='Month,Day,Hour,Quarter,P1(DayOfWeek),P2(Holiday),P3(HighestTemp),P4(Weather),Demand', type=str,
                         help="Train target columns from dataset '..., Demand' must match input size")
     parser.add_argument('--test', required=False, default='2018', type=str,
                         help="Test target date for extraction. (YYYY(-MM(-DD)))")
-    parser.add_argument('--test-columns', required=False, default='Month, Day, Hour, Quarter, P1(DayOfWeek)', type=str,
+    parser.add_argument('--test-columns', required=False, default='Month,Day,Hour,Quarter,P1(DayOfWeek),P2(Holiday),P3(HighestTemp),P4(Weather)', type=str,
                         help="Test target columns from dataset '..., ' must match input size except y(Demand)")
     main(parser.parse_args())
