@@ -6,9 +6,8 @@ import pandas as pd
 
 
 def main(args: argparse.Namespace):
-    label = pd.read_csv(args.label).values
-    prediction = pd.read_csv(args.pred).values
-
+    label = pd.read_csv(args.label).values[:, -1]
+    prediction = pd.read_csv(args.pred).values[:, -1]
 
     mae = np.sum(np.absolute(label - prediction))
     mse = np.square(label - prediction).mean(axis=0).item()
