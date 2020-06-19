@@ -47,7 +47,7 @@ def main(args: argparse.Namespace):
     out.mkdir(exist_ok=True, parents=True)
 
     # Train sequences
-    model.fit(train_x, train_y, epochs=args.epoch,
+    model.fit(train_x, train_y, epochs=args.epoch, shuffle=True,
               batch_size=args.batch, verbose=not args.silence, 
               callbacks=model.callbacks(early_stop=not args.no_stop))
     model.save(str(out.joinpath('model.h5')))
@@ -59,8 +59,9 @@ def main(args: argparse.Namespace):
         test[index + args.input_size, -1] = pred
 
     result = test_set.dataframe
-    # result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
-    result[train_set.dataframe.columns[-1]] = test[args.input_size:, -1]
+
+    result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
+    # result[train_set.dataframe.columns[-1]] = test[args.input_size:, -1]
     result.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
@@ -76,14 +77,14 @@ if __name__ == '__main__':
     # Training arguments
     parser.add_argument('--epoch', required=False, default=100, type=int,
                         help="Training arguments for trainer, epoch")
-    parser.add_argument('--batch', required=False, default=32, type=int,
+    parser.add_argument('--batch', required=False, default=1024, type=int,
                         help="Training arguments for trainer, batch")
     parser.add_argument('--loss', required=False, default='mse', type=str, choices=['mse', 'mae'],
                         help="Training arguments for trainer, loss function")
                         
-    parser.add_argument('--hidden-size', required=False, default=32, type=int,
+    parser.add_argument('--hidden-size', required=False, default=128, type=int,
                         help="Training arguments for network, hidden layer size")
-    parser.add_argument('--input-size', required=False, default=8, type=int,
+    parser.add_argument('--input-size', required=False, default=32, type=int,
                         help="Training arguments for network, input size")
 
     parser.add_argument('--no-stop', required=False, default=False, action='store_true',

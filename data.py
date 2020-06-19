@@ -20,7 +20,7 @@ class Dataset:
             "feautre_size must match length of columns"
 
         dataframe = self.scaler.fit_transform(self.dataframe)
-        dataframe[:, -1] = self.dataframe.values[:, -1]
+        dataframe[:, -1] = self.dataframe.values[:, -1] / 1500
 
         if self.is_test:
             return np.hstack((dataframe, np.zeros((len(self), 1))))
@@ -35,4 +35,5 @@ class Dataset:
 
     def inverse_transform(self, X: np.ndarray, axis: int = -1) ->\
             np.ndarray:
-        return (X + self.scaler.min_[axis]) / self.scaler.scale_[axis]
+        return X * 1500
+        # return (X + self.scaler.min_[axis]) / self.scaler.scale_[axis]

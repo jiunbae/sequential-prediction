@@ -14,7 +14,7 @@ class Model:
         self.model = self.graph(**graph_param)
         self.optim = self.optimizer(**optim_param)
         
-        self.model.compile(loss='mae',
+        self.model.compile(loss='mse',
                            optimizer=self.optim, metrics=['mse', 'mae', 'acc'])
 
     def __getattr__(self, key: str) -> Any:
@@ -28,7 +28,7 @@ class Model:
         results = []
 
         if early_stop:
-            results += [EarlyStopping(monitor='loss', patience=1, verbose=1)]
+            results += [EarlyStopping(monitor='loss', patience=20, verbose=1)]
 
         return results
 
@@ -39,11 +39,11 @@ class Model:
             graph.add(
                 LSTM(hidden_size, input_shape=(input_size, feature_size), return_sequences=True))
             graph.add(
-                Dropout(.3))
+                Dropout(.1))
         graph.add(
             LSTM(hidden_size, input_shape=(input_size, feature_size)))
         graph.add(
-            Dropout(.3))
+            Dropout(.1))
         graph.add(
             Dense(1))
 
