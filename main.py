@@ -48,8 +48,8 @@ def main(args: argparse.Namespace):
         pred = model.predict(test_input).squeeze()
         test[index + args.input_size, -1] = pred
 
-    result = pd.DataFrame(train_set.inverse_transform(test[args.input_size:, -1]),
-                          columns=[train_set.dataframe.columns[-1]])
+    result = test_set.dataframe
+    result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
     result.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
