@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Union, Callable, Any
 
 import keras
 import keras.backend as K
@@ -10,12 +10,13 @@ from tensorflow import set_random_seed
 
 class Model:
     def __init__(self, 
-                 graph_param: Optional[dict], optim_param: Optional[dict]):
+                 graph_param: Optional[dict], optim_param: Optional[dict],
+                 metrics: List[Union[str, Callable]] = ['acc', 'mae', 'mse']):
         self.model = self.graph(**graph_param)
         self.optim = self.optimizer(**optim_param)
         
         self.model.compile(loss='mse',
-                           optimizer=self.optim, metrics=['mse', 'mae', 'acc'])
+                           optimizer=self.optim, metrics=metrics)
 
     def __getattr__(self, key: str) -> Any:
         if hasattr(self.model, key):

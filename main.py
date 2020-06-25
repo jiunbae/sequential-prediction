@@ -37,7 +37,7 @@ def main(args: argparse.Namespace):
 
     train_x, train_y = train_set(**model_args)
     test = np.concatenate((train_x[-1], test_set(**model_args)))
-    
+
     model = Model(model_args, optim_args)
 
     if not args.silence:
@@ -47,21 +47,21 @@ def main(args: argparse.Namespace):
     out.mkdir(exist_ok=True, parents=True)
 
     # Train sequences
+    print(f'Training ...')
     model.fit(train_x, train_y, epochs=args.epoch, shuffle=True,
               batch_size=args.batch, verbose=not args.silence, 
               callbacks=model.callbacks(early_stop=not args.no_stop))
     model.save(str(out.joinpath('model.h5')))
 
     # Test sequences
+    print(f'Testing ...')
     for index in range(len(test_set)):
         test_input = np.expand_dims(test[index:index + args.input_size], 0)
         pred = model.predict(test_input).squeeze()
         test[index + args.input_size, -1] = pred
 
     result = test_set.dataframe
-
     result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
-    # result[train_set.dataframe.columns[-1]] = test[args.input_size:, -1]
     result.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                         
     parser.add_argument('--hidden-size', required=False, default=128, type=int,
                         help="Training arguments for network, hidden layer size")
-    parser.add_argument('--input-size', required=False, default=32, type=int,
+    parser.add_argument('--input-size', required=False, default=64, type=int,
                         help="Training arguments for network, input size")
 
     parser.add_argument('--no-stop', required=False, default=False, action='store_true',
