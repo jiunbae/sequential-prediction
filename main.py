@@ -1,10 +1,7 @@
-import tensorflow as tf
-from keras import backend as K
 import argparse
 import random
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
 
 from model import Model
@@ -19,14 +16,12 @@ def init(seed: int):
 def main(args: argparse.Namespace):
     init(args.seed)
 
-    train_set, test_set = Dataset(args.train), Dataset(args.test, test=True)
-    assert len(train_set.dataframe.columns) == len(test_set.dataframe.columns) + 1,\
-        "The number of columns in the train set and test set must be one difference."
+    dataset = Dataset(args.train)
 
     model_args = {
         'hidden_size': args.hidden_size,
         'input_size': args.input_size,
-        'feature_size': len(train_set.dataframe.columns),
+        'feature_size': len(dataset.dataframe.columns),
     }
     optim_args = {
         'lr': args.lr,
@@ -35,34 +30,40 @@ def main(args: argparse.Namespace):
         'decay': args.decay,
     }
 
-    train_x, train_y = train_set(**model_args)
-    test = np.concatenate((train_x[-1], test_set(**model_args)))
-
-    model = Model(model_args, optim_args)
-
-    if not args.silence:
-        model.summary()
+    train_x, train_y = dataset(**model_args)
+    test_frame = dataset.load(args.test)
+    test = np.concatenate((train_x[0],
+                           dataset.transform(np.hstack((test_frame, np.zeros((len(test_frame), 1)))))))
 
     out = Path(args.output)
     out.mkdir(exist_ok=True, parents=True)
 
-    # Train sequences
-    print(f'Training ...')
-    model.fit(train_x, train_y, epochs=args.epoch, shuffle=True,
-              batch_size=args.batch, verbose=not args.silence, 
-              callbacks=model.callbacks(early_stop=not args.no_stop))
-    model.save(str(out.joinpath('model.h5')))
+    if args.model:
+        print(f'Model load from {args.model} ...')
+        model = Model.from_file(args.model)
+
+    else:
+        model = Model(model_args, optim_args)
+
+        if not args.silence:
+            model.summary()
+
+        # Train sequences
+        print('Training ...')
+        model.fit(train_x, train_y, epochs=args.epoch, shuffle=True,
+                  batch_size=args.batch, verbose=not args.silence,
+                  callbacks=model.callbacks(early_stop=not args.no_stop))
+        model.save(str(out.joinpath('model.h5')))
 
     # Test sequences
-    print(f'Testing ...')
-    for index in range(len(test_set)):
+    print('Testing ...')
+    for index in range(len(test) - args.input_size):
         test_input = np.expand_dims(test[index:index + args.input_size], 0)
         pred = model.predict(test_input).squeeze()
         test[index + args.input_size, -1] = pred
 
-    result = test_set.dataframe
-    result[train_set.dataframe.columns[-1]] = train_set.inverse_transform(test[args.input_size:, -1])
-    result.to_csv(str(out.joinpath('prediction.csv')), index=None)
+    test_frame[dataset.dataframe.columns[-1]] = dataset.inverse_transform(test[args.input_size:, -1])
+    test_frame.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
 
 if __name__ == '__main__':
@@ -74,17 +75,22 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', required=False, default='./results', type=str,
                         help="Ouput directory")
 
+    # resume model
+    parser.add_argument('--model', required=False, default='', type=str,
+                        help="Load model")
+
     # Training arguments
     parser.add_argument('--epoch', required=False, default=100, type=int,
                         help="Training arguments for trainer, epoch")
     parser.add_argument('--batch', required=False, default=1024, type=int,
                         help="Training arguments for trainer, batch")
-    parser.add_argument('--loss', required=False, default='mse', type=str, choices=['mse', 'mae'],
+    parser.add_argument('--loss', required=False, default='mse', type=str,
+                        choices=['mse', 'mape', 'mae'],
                         help="Training arguments for trainer, loss function")
                         
-    parser.add_argument('--hidden-size', required=False, default=128, type=int,
+    parser.add_argument('--hidden-size', required=False, default=512, type=int,
                         help="Training arguments for network, hidden layer size")
-    parser.add_argument('--input-size', required=False, default=64, type=int,
+    parser.add_argument('--input-size', required=False, default=128, type=int,
                         help="Training arguments for network, input size")
 
     parser.add_argument('--no-stop', required=False, default=False, action='store_true',
