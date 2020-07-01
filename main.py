@@ -88,7 +88,7 @@ if __name__ == '__main__':
                         choices=['mse', 'mape', 'mae'],
                         help="Training arguments for trainer, loss function")
                         
-    parser.add_argument('--hidden-size', required=False, default=512, type=int,
+    parser.add_argument('--hidden-size', required=False, default=64, type=int,
                         help="Training arguments for network, hidden layer size")
     parser.add_argument('--input-size', required=False, default=128, type=int,
                         help="Training arguments for network, input size")

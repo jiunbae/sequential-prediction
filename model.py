@@ -14,6 +14,7 @@ class Model:
         self.model = self.graph(**graph_param)
         self.optim = self.optimizer(**optim_param)
 
+        keras.backend.set_epsilon(1)
         self.model.compile(loss='mape',
                            optimizer=self.optim, metrics=metrics)
 
