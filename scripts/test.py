@@ -20,7 +20,6 @@ def mean_absolute_percentage_error(y_true, y_pred, epsilon=1e-6):
 
 
 def main(args: argparse.Namespace):
-    epsilon = 1e-10
     label = pd.read_csv(args.label).values[:, -1]
     prediction = pd.read_csv(args.pred).values[:, -1]
     prediction += abs(prediction.min())
@@ -30,7 +29,7 @@ def main(args: argparse.Namespace):
 
     mse = mean_squared_error(label, prediction)
     mae = mean_absolute_error(label, prediction)
-    mape = mean_absolute_percentage_error(label, prediction)
+    mape = mean_absolute_percentage_error(label, prediction, args.epsilon)
 
     print(f'MSE: {mse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}')
 
@@ -42,4 +41,8 @@ if __name__ == '__main__':
                         help="Input test label data file path")
     parser.add_argument('-p', '--pred', required=False, default='./results/prediction.csv', type=str,
                         help="Input prediction data file path")
+
+    parser.add_argument('--epsilon', required=False, default=1e-4, type=float,
+                        help="Epsilon")
+
     main(parser.parse_args())
