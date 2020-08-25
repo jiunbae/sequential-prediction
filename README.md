@@ -11,3 +11,13 @@ python scripts/split.py --data ./data/raw.csv --output ./data
 python main.py --train ./data/train.csv --test ./data/test.csv --output ./results
 ```
 Main scripts create `./results` directory which includes `model.h5` and `prediction.csv`.
+
+
+## Model detail
+
+#### Hyperparameters
+- hidden_size: 128
+- input_size: 256
+- feature_size: 4
+
+![Model](../assets/model.png)

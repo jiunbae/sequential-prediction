@@ -4,7 +4,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
 from keras.callbacks import EarlyStopping
-from tensorflow import set_random_seed
+import tensorflow as tf
 
 
 class Model:
@@ -38,8 +38,8 @@ class Model:
         return results
 
     @staticmethod
-    def graph(hidden_size: int, input_size: int, feature_size: int, nested: int = 2):
-        graph = Sequential(name='Sequential Model')
+    def graph(hidden_size: int, input_size: int, feature_size: int, nested: int = 2, dropout: float = .1):
+        graph = Sequential(name='sequential-model')
         for _ in range(nested):
             graph.add(
                 LSTM(hidden_size, input_shape=(input_size, feature_size), return_sequences=True))
@@ -60,4 +60,4 @@ class Model:
 
     @staticmethod
     def init(seed: int):
-        set_random_seed(seed)
+        tf.random.set_seed(seed)

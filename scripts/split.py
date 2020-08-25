@@ -25,7 +25,7 @@ def main(args: argparse.Namespace):
     out.mkdir(exist_ok=True, parents=True)
 
     train[train_columns].to_csv(str(out.joinpath('train.csv')), index=None)
-    test[test_columns].to_csv(str(out.joinpath('test.csv')), index=None)
+    test[test_columns + label_columns].to_csv(str(out.joinpath('test.csv')), index=None)
 
     test[label_columns].to_csv(str(out.joinpath('test-label.csv')), index=None)
 

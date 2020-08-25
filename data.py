@@ -14,7 +14,7 @@ class Dataset:
     def __len__(self):
         return np.size(self.dataframe, 0)
 
-    def __call__(self, hidden_size: int, input_size: int, feature_size: int) ->\
+    def __call__(self, hidden_size: int, input_size: int, feature_size: int, **kwargs) ->\
             Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
 
         dataframe = self.scaler.fit_transform(self.dataframe)
@@ -41,4 +41,4 @@ class Dataset:
         # _min, _max = X.min(), X.max()
         # X = (X - _min) / (_max - _min) *(self._max - self._min) + self._min
         # return X
-        return (X + self.scaler.min_[axis]) / self.scaler.scale_[axis]
+        return X * (self.scaler.data_max_[axis] - self.scaler.data_min_[axis]) + self.scaler.data_min_[axis]
