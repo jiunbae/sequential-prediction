@@ -45,7 +45,7 @@ def main(args: argparse.Namespace):
     d.mkdir(exist_ok=True)
     days = pred_data[:, :2]
     days_unique = np.sort(np.unique(days, axis=0))
-    mape_days = np.hstack((days_unique, np.empty((196, 1))))
+    mape_days = np.hstack((days_unique, np.empty((len(days_unique), 1))))
     for i, day in enumerate(days_unique):
         index = np.where((days == day).all(axis=1))
         mo, da = day
@@ -67,7 +67,6 @@ def main(args: argparse.Namespace):
     for month in months_unique:
         index = np.where((months == month).all(axis=1))
         mo = month
-
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.set_title(f'MAPE: {mean_absolute_percentage_error(label[index], pred[index]):.4}')

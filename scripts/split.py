@@ -8,8 +8,8 @@ def main(args: argparse.Namespace):
     df = pd.read_csv(args.data)
 
     if not args.p2:
-        df[df['P2(Holiday)'] != 4]['P2(Holiday)'] = 0
-        df[df['P2(Holiday)'] == 4]['P2(Holiday)'] = 0
+        df.loc[df['P2(Holiday)'] != 4., 'P2(Holiday)'] = 0
+        df.loc[df['P2(Holiday)'] == 4., 'P2(Holiday)'] = 1
 
     train, test = df.copy(), df.copy()
 
