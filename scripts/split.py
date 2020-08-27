@@ -6,6 +6,11 @@ import pandas as pd
 
 def main(args: argparse.Namespace):
     df = pd.read_csv(args.data)
+
+    if not args.p2:
+        df['P2(Holiday)'][df['P2(Holiday)'] != 4] = 0
+        df['P2(Holiday)'][df['P2(Holiday)'] == 4] = 1
+
     train, test = df.copy(), df.copy()
 
     train_columns = list(
@@ -36,6 +41,9 @@ if __name__ == '__main__':
                         help="Input data file path")
     parser.add_argument('-o', '--output', required=False, default='./data', type=str,
                         help="Extracted output directory path")
+
+    parser.add_argument('--p2', required=False, default=False, action='store_true',
+                        help="cancel p2 normalization")
 
     parser.add_argument('--train', required=False, default='2017', type=str,
                         help="Train target date for extraction. (YYYY(-MM(-DD)))")
