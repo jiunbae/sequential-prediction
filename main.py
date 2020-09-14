@@ -81,20 +81,32 @@ def main(args: argparse.Namespace):
         pred = model.predict(test_input).squeeze()
         test[index + args.input_size, -1] = pred
 
-    test_frame[dataset.dataframe.columns[-1]] = dataset.inverse_transform(test[args.input_size:, -1])
+    test_frame[dataset.dataframe.columns[-1]] = test[args.input_size:, -1]
     test_frame.to_csv(str(out.joinpath('prediction.csv')), index=None)
 
-    if not args.no_fig:
-        import matplotlib.pyplot as plt
+    test_frame[dataset.dataframe.columns[-1]] = dataset.inverse_transform(test[args.input_size:, -1])
+    test_frame.to_csv(str(out.joinpath('prediction-scaled.csv')), index=None)
 
-        prediction = test_frame.values[:, -1]
-        x_range = np.arange(np.size(label, 0))
-        error = mean_absolute_percentage_error(label, prediction)
+    if not args.no_fig:
+        def scaler(values: np.ndarray)\
+            -> np.ndarray:
+            min_, max_ = values.min(), values.max()
+            return (values - min_) / (max_ - min_)
+
+        import matplotlib
+        import matplotlib.pyplot as plt
+        matplotlib.use('Agg')
+
+        label_scale = scaler(label)
+        prediction = scaler(test_frame.values[:, -1])
+        x_range = np.arange(np.size(prediction, 0))
+
+        error = mean_absolute_percentage_error(label_scale, prediction)
         plt.title(f'MAPE: {error:.4}')
-        plt.ylim(0, 1200)
-        plt.plot(x_range, label, c='r')
+        plt.ylim(0, 1)
+        plt.plot(x_range, label_scale, c='r')
         plt.plot(x_range, prediction, c='b')
-        plt.savefig('figure.jpg', dpi=400)
+        plt.savefig(str(out.joinpath('figure.jpg')), dpi=400)
 
         print(f'MAPE: {error:.4}')
 
@@ -148,6 +160,8 @@ if __name__ == '__main__':
                         help="Verbose log")
     parser.add_argument('--no-fig', required=False, default=False, action='store_true',
                         help="If enabled, do not store figure")
+    parser.add_argument('--no-fit', required=False, default=True, action='store_true',
+                        help="If enabled, do not fit 0-1 scale")
     
     # Experimental only
     parser.add_argument('--use-test', required=False, default=False, action='store_true',

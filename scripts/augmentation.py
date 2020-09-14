@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+import numpy as np
 import pandas as pd 
 
 
@@ -8,7 +9,7 @@ def main(args: argparse.Namespace):
     df = pd.read_csv(args.train)
     train = df.values
     data = train.copy()
-    for _ in range(repeat):
+    for _ in range(args.repeat):
         dump = train.copy()
         dump[:, -1] += np.random.normal(.0, train[:, -1].std() * .1, size=train[:, -1].shape)
         data = np.concatenate((data, dump))
